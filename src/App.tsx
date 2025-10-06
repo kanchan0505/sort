@@ -1,9 +1,8 @@
  
 import React, { useEffect } from 'react'
-import { IconChartBar, IconGitBranch } from '@tabler/icons-react'
+import { IconChartBar } from '@tabler/icons-react'
 import AppBar from '@/components/AppBar'
 import BarsCanvas from '@/views/BarsViewport/BarsCanvas'
-import AlgorithmFlow from '@/views/FlowViewport/AlgorithmFlow'
 import ControlPanel from '@/views/Controls/ControlPanel'
 import MetricsPanel from '@/views/Metrics/MetricsPanel'
 import ExplanationDialog from '@/components/ExplanationDialog'
@@ -64,27 +63,14 @@ export default function App() {
             />
           </div>
           
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <div className="panel p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
-                <IconChartBar size={20} className="text-blue-400" />
-                <h2 className="text-lg font-semibold">Bars Visualization</h2>
-              </div>
-              <div className="h-[400px] rounded-lg overflow-hidden bg-slate-800">
-                <BarsCanvas />
-              </div>
+          <div className="panel p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+              <IconChartBar size={20} className="text-blue-400" />
+              <h2 className="text-lg font-semibold">Sorting Visualization</h2>
             </div>
-            
-            <div className="panel p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"></div>
-                <IconGitBranch size={20} className="text-purple-400" />
-                <h2 className="text-lg font-semibold">Algorithm Flow</h2>
-              </div>
-              <div className="h-[400px] rounded-lg overflow-hidden bg-slate-800">
-                <AlgorithmFlow />
-              </div>
+            <div className="h-[500px] rounded-lg overflow-hidden bg-slate-800">
+              <BarsCanvas />
             </div>
           </div>
           

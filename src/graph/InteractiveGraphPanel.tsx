@@ -1,21 +1,16 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useState } from 'react'
 import ReactFlow, { 
   Background, 
   Controls, 
   Node, 
   Edge, 
-  addEdge, 
   Connection, 
-  OnConnect,
-  NodeChange,
-  EdgeChange,
-  applyNodeChanges,
-  applyEdgeChanges,
   Position,
-  NodeTypes
+  NodeTypes,
+  ReactFlowProvider
 } from 'reactflow'
 import { useGraphStore } from '@/graph/store/useGraphStore'
-import { IconTarget, IconPlaylistAdd } from '@tabler/icons-react'
+import { IconTarget, IconFlag, IconRoute } from '@tabler/icons-react'
 
 // Custom node component for better visuals
 function GraphNode({ data, selected }: { data: any; selected?: boolean }) {
@@ -43,7 +38,7 @@ function GraphNode({ data, selected }: { data: any; selected?: boolean }) {
       <div className="text-center">
         <div className="text-white font-bold text-lg">{data.label}</div>
         {isStart && <IconTarget className="w-4 h-4 text-white mx-auto mt-1" />}
-        {isGoal && <IconPlaylistAdd className="w-4 h-4 text-white mx-auto mt-1" />}
+        {isGoal && <IconFlag className="w-4 h-4 text-white mx-auto mt-1" />}
       </div>
     </div>
   )
@@ -54,6 +49,9 @@ const nodeTypes: NodeTypes = {
 }
 
 export default function InteractiveGraphPanel() {
+  const [nodes, setNodes] = useState<Node[]>([])
+  const [edges, setEdges] = useState<Edge[]>([])
+  
   const graph = useGraphStore(s => s.graph)
   const setGraph = useGraphStore(s => s.setGraph)
   const visited = useGraphStore(s => s.visitedSet())
@@ -64,14 +62,15 @@ export default function InteractiveGraphPanel() {
   const gGoal = useGraphStore(s => s.gGoal)
   const setGraphGoal = useGraphStore(s => s.setGraphGoal)
 
-  const { nodes, edges } = useMemo(() => {
+  // Update nodes and edges when graph state changes
+  React.useEffect(() => {
     const ids = Object.keys(graph)
     const positions = [
       { x: 150, y: 150 }, { x: 400, y: 100 }, { x: 650, y: 150 }, { x: 400, y: 250 },
       { x: 250, y: 300 }, { x: 550, y: 300 }, { x: 150, y: 450 }, { x: 650, y: 450 }
     ]
     
-    const nodes: Node[] = ids.map((id, idx) => ({
+    const newNodes: Node[] = ids.map((id, idx) => ({
       id,
       type: 'graphNode',
       position: positions[idx] || { x: 100 + (idx % 4) * 200, y: 100 + Math.floor(idx / 4) * 150 },
@@ -80,7 +79,7 @@ export default function InteractiveGraphPanel() {
       targetPosition: Position.Left,
     }))
     
-    const edges: Edge[] = []
+    const newEdges: Edge[] = []
     for (const u of Object.keys(graph)) {
       for (const { to, w } of graph[u]) {
         const edgeId = `${u}-${to}`
@@ -88,7 +87,7 @@ export default function InteractiveGraphPanel() {
         const inMst = mst.has(key(u, to))
         const inPath = path.includes(u) && path.includes(to)
         
-        edges.push({ 
+        newEdges.push({ 
           id: edgeId, 
           source: u, 
           target: to, 
@@ -108,10 +107,11 @@ export default function InteractiveGraphPanel() {
         })
       }
     }
-    return { nodes, edges }
+    setNodes(newNodes)
+    setEdges(newEdges)
   }, [graph, mst, path])
 
-  const onConnect: OnConnect = useCallback((connection: Connection) => {
+  const onConnect = useCallback((connection: Connection) => {
     if (!connection.source || !connection.target) return
     const u = connection.source, v = connection.target
     setGraph({
@@ -143,19 +143,22 @@ export default function InteractiveGraphPanel() {
       </div>
       
       <div className="h-[500px] rounded-xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600">
-        <ReactFlow 
-          nodes={nodes}
-          edges={edges}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          nodeTypes={nodeTypes}
-          fitView
-          snapToGrid
-          snapGrid={[20, 20]}
-        >
-          <Controls className="bg-slate-800 border-slate-600" />
-          <Background color="#475569" />
-        </ReactFlow>
+        <ReactFlowProvider>
+          <ReactFlow 
+            nodes={nodes}
+            edges={edges}
+            onConnect={onConnect}
+            onNodeClick={onNodeClick}
+            nodeTypes={nodeTypes}
+            fitView
+            snapToGrid
+            snapGrid={[20, 20]}
+            defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+          >
+            <Controls className="bg-slate-800 border-slate-600" />
+            <Background color="#475569" />
+          </ReactFlow>
+        </ReactFlowProvider>
       </div>
     </div>
   )

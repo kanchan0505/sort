@@ -19,17 +19,30 @@ export default function AppBar() {
   return (
     <div className="bg-slate-900/80 border-b border-slate-700 backdrop-blur-md sticky top-0 z-50">
       <div className="flex items-center justify-between px-6 py-3">
-        <div className="flex items-baseline gap-3">
-          <button
-            onClick={() => navigate('/graphs')}
-            className="text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent hover:opacity-90 transition-opacity"
-            aria-label="Open Graph Algorithms"
-          >
-            SortFlow
-          </button>
-          <span className="text-sm text-slate-400 animate-pulse">
-            Interactive algorithm visualizer
-          </span>
+        <div className="flex items-baseline gap-6">
+          <div className="flex items-baseline gap-3">
+            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              SortFlow
+            </h1>
+            <span className="text-sm text-slate-400 animate-pulse">
+              Interactive algorithm visualizer
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/graphs')}
+              className="px-3 py-1 text-sm rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-all hover:scale-105"
+            >
+              Graphs
+            </button>
+            <button
+              onClick={() => navigate('/trees')}
+              className="px-3 py-1 text-sm rounded-lg bg-green-600 hover:bg-green-700 text-white transition-all hover:scale-105"
+            >
+              Trees
+            </button>
+          </div>
         </div>
         
         <div className="flex items-center gap-4">
