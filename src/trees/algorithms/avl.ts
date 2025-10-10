@@ -84,11 +84,14 @@ export const avlTreeInsert: TreeAlgoGenerator = function* (
     }
 
     // Update height
-    const oldHeight = node.height ?? 0
-    updateHeight(node)
-    if (node.height !== oldHeight) {
-      yield { type: 'balance', nodeId: node.id, oldHeight, newHeight: node.height }
-    }
+   const oldHeight: number = node.height ?? 0
+updateHeight(node)
+const newHeight: number = node.height ?? 0
+
+if (newHeight !== oldHeight) {
+  yield { type: 'balance', nodeId: node.id, oldHeight, newHeight }
+}
+
 
     // Get balance factor
     const balance = getBalance(node)
