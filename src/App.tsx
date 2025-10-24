@@ -20,7 +20,7 @@ export default function App() {
   const step = useAppStore((s) => s.step)
   
   useEffect(() => {
-    randomize(32)
+    randomize(10)
     generate()
     const isDev = (import.meta as any).env ? (import.meta as any).env.DEV : process.env.NODE_ENV !== 'production'
     if (isDev) {

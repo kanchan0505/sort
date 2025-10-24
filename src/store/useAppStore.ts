@@ -48,7 +48,7 @@ function seededRandom(seed = 1) {
 }
 
 export const useAppStore = create<State & Actions>((set, get) => ({
-  input: Array.from({ length: 32 }, (_, i) => i + 1).sort(() => Math.random() - 0.5),
+  input: Array.from({ length: 10 }, (_, i) => i + 1).sort(() => Math.random() - 0.5),
   algo: 'quick',
   events: [],
   snapshots: [],
