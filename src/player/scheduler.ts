@@ -31,7 +31,7 @@ export function createScheduler(length: number, onUpdate: (cursor: number) => vo
   function play() {
     if (playing) return
     playing = true
-    const interval = Math.max(8, 1000 / (30 * speed))
+    const interval = Math.max(8, 1000 / (60 * speed))
     timer = setInterval(tick, interval)
   }
   function pause() {

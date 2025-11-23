@@ -20,5 +20,9 @@ export const topoSort: GraphAlgoGenerator = function* (graph: Graph): Generator<
     }
   }
   yield { type: 'order', nodes: order }
+  // Check for cycles
+  if (order.length !== Object.keys(graph).length) {
+    yield { type: 'negativeCycle' }
+  }
   yield { type: 'done' }
 }

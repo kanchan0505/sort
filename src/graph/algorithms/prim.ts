@@ -17,7 +17,7 @@ export const prim: GraphAlgoGenerator = function* (graph: Graph, start: string):
     }
     if (!u) break
     inMST.add(u)
-    if (parent[u]) yield { type: 'connect', u, v: parent[u]! }
+    if (parent[u]) yield { type: 'connect', u: parent[u]!, v: u }
     yield { type: 'visit', node: u }
     for (const { to, w } of graph[u] || []) {
       if (!inMST.has(to) && w < keys[to]) { keys[to] = w; parent[to] = u }

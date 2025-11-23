@@ -29,9 +29,9 @@ export const binaryTreeInsert: TreeAlgoGenerator = function* (
 
     // Find the first node with an available child slot
     let inserted = false
-    const queueCopy = [...queue]
     
-    for (const node of queueCopy) {
+    while (queue.length && !inserted) {
+      const node = queue[0]
       yield { type: 'highlight', nodeId: node.id, reason: 'current' }
       
       if (!node.left) {
@@ -47,7 +47,6 @@ export const binaryTreeInsert: TreeAlgoGenerator = function* (
         queue.push(newNode)
         yield { type: 'create', nodeId, value, parentId: node.id, direction: 'left' }
         inserted = true
-        break
       } else if (!node.right) {
         const nodeId = generateNodeId()
         const newNode: TreeNode = {
@@ -60,10 +59,8 @@ export const binaryTreeInsert: TreeAlgoGenerator = function* (
         nodes.set(nodeId, newNode)
         queue.push(newNode)
         yield { type: 'create', nodeId, value, parentId: node.id, direction: 'right' }
-        // Remove node from queue if both children are filled
-        queue.shift()
         inserted = true
-        break
+        queue.shift()
       } else {
         // Both children exist, remove from queue
         queue.shift()

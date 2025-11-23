@@ -8,7 +8,8 @@ export const quickSort: AlgoGenerator = function* (arr: number[]): Generator<Sor
     let i = l
     for (let j = l; j < r; j++) {
       yield { type: 'compare', i: j, j: r }
-      if (a[j] <= pivot) {
+      // Use strict less-than to handle equal elements consistently
+      if (a[j] < pivot) {
         if (i !== j) {
           ;[a[i], a[j]] = [a[j], a[i]]
           yield { type: 'swap', i, j }

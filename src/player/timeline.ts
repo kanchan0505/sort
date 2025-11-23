@@ -5,7 +5,7 @@ export type Timeline = {
   snapshots: Array<{ index: number; state: number[] }>
 }
 
-export function buildTimeline(events: Iterable<SortingEvent>, initial: number[], snapshotEvery = 100): Timeline {
+export function buildTimeline(events: Iterable<SortingEvent>, initial: number[], snapshotEvery = 50): Timeline {
   const arr: SortingEvent[] = []
   const snaps: Array<{ index: number; state: number[] }> = []
   let count = 0
@@ -31,6 +31,9 @@ export function buildTimeline(events: Iterable<SortingEvent>, initial: number[],
 }
 
 export function replayToArray(initial: number[], events: SortingEvent[], endIdx: number, snapshots?: Array<{ index: number; state: number[] }>): number[] {
+  // Validate endIdx
+  if (endIdx < -1) return initial.slice()
+  
   // Find the closest snapshot before endIdx
   let startState = initial.slice()
   let startIdx = -1
@@ -45,7 +48,8 @@ export function replayToArray(initial: number[], events: SortingEvent[], endIdx:
   }
   
   // Replay from snapshot to target
-  for (let k = startIdx + 1; k <= endIdx && k < events.length; k++) {
+  const targetIdx = Math.min(endIdx, events.length - 1)
+  for (let k = startIdx + 1; k <= targetIdx; k++) {
     const ev = events[k]
     switch (ev.type) {
       case 'swap': {

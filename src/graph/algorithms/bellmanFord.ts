@@ -23,11 +23,14 @@ export const bellmanFord: GraphAlgoGenerator = function* (
     }
   }
   // detect negative cycle
-  for (const u of V) for (const { to, w } of graph[u] || []) {
-    if (dist[u] + w < dist[to]) {
-      yield { type: 'negativeCycle' }
-      yield { type: 'done' }
-      return
+  for (const u of V) {
+    if (!isFinite(dist[u])) continue
+    for (const { to, w } of graph[u] || []) {
+      if (dist[u] + w < dist[to]) {
+        yield { type: 'negativeCycle' }
+        yield { type: 'done' }
+        return
+      }
     }
   }
   if (goal) {

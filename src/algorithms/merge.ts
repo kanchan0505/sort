@@ -22,13 +22,17 @@ export const mergeSort: AlgoGenerator = function* (arr: number[]): Generator<Sor
       }
       k++
     }
+    // Remaining left elements
     while (i < left.length) {
+      yield { type: 'compare', i: l + i, j: m + 1 }
       a[k] = left[i]
       yield { type: 'overwrite', i: k, value: left[i] }
       i++
       k++
     }
+    // Remaining right elements
     while (j < right.length) {
+      yield { type: 'compare', i: l, j: m + 1 + j }
       a[k] = right[j]
       yield { type: 'overwrite', i: k, value: right[j] }
       j++

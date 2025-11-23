@@ -6,7 +6,7 @@ export const selectionSort: AlgoGenerator = function* (arr: number[]): Generator
   for (let i = 0; i < n - 1; i++) {
     let min = i
     for (let j = i + 1; j < n; j++) {
-      yield { type: 'compare', i: min, j }
+      yield { type: 'compare', i, j }
       if (a[j] < a[min]) min = j
     }
     if (min !== i) {

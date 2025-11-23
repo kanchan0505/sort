@@ -35,10 +35,10 @@ export const aStar: GraphAlgoGenerator = function* (
       }
     }
   }
-  // reconstruct
+  // reconstruct path
   const path: string[] = []
   let cur: string | undefined = goal
-  if (!came[cur] && cur !== start) { yield { type: 'done' }; return }
+  if (!(goal in came) && goal !== start) { yield { type: 'done' }; return }
   while (cur) { path.push(cur); cur = came[cur] }
   path.reverse()
   yield { type: 'path', nodes: path }
