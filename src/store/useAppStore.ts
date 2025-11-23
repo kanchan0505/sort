@@ -63,21 +63,38 @@ export const useAppStore = create<State & Actions>((set, get) => ({
 
   setInput(arr) {
     set({ input: arr })
+    // Auto-generate after input changes
+    setTimeout(() => {
+      const { generate } = get()
+      generate()
+    }, 0)
   },
   randomize(n, seed) {
     const rnd = seed ? seededRandom(seed) : Math.random
     const arr = Array.from({ length: n }, () => Math.floor(rnd() * n) + 1)
-    set({ input: arr })
+    set({ input: arr, playing: false })
+    // Auto-generate after randomize
+    setTimeout(() => {
+      const { generate } = get()
+      generate()
+    }, 0)
   },
   setAlgo(algo) {
-    set({ algo })
+    set({ algo, playing: false })
+    // Auto-generate after algorithm changes
+    setTimeout(() => {
+      const { generate } = get()
+      generate()
+    }, 0)
   },
   generate() {
-    const { input, algo } = get()
+    const { input, algo, scheduler } = get()
+    // Pause any playing animation before generating new timeline
+    if (scheduler) scheduler.pause()
     const gen = algorithms[algo].run(input)
     const timeline = buildTimeline(gen, input)
-    const scheduler = createScheduler(timeline.events.length, (cursor) => set({ cursor }))
-    set({ events: timeline.events, snapshots: timeline.snapshots, scheduler, cursor: -1 })
+    const newScheduler = createScheduler(timeline.events.length, (cursor) => set({ cursor }))
+    set({ events: timeline.events, snapshots: timeline.snapshots, scheduler: newScheduler, cursor: -1, playing: false })
   },
   play() {
     const { scheduler } = get()

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
-import ReactFlow, { Background, Controls, Node, Edge, Position } from 'reactflow'
+import ReactFlow, { Background, Controls, Node, Edge, Position, ReactFlowProvider } from 'reactflow'
+import 'reactflow/dist/style.css'
 import { IconTopologyStar3 } from '@tabler/icons-react'
 import { useGraphStore } from '@/graph/store/useGraphStore'
 
@@ -37,43 +38,45 @@ export default function GraphFlowPanel() {
         <h2 className="text-lg font-semibold">Graph View (React Flow)</h2>
       </div>
       <div className="h-[400px] rounded-lg overflow-hidden bg-slate-800">
-        <ReactFlow
-          nodes={nodes.map(n => ({
-            ...n,
-            style: {
-              border: '2px solid',
-              borderColor: path.includes(n.id) ? '#22c55e' : visited.has(n.id) ? '#60a5fa' : '#334155',
-              background: path.includes(n.id) ? '#14532d' : visited.has(n.id) ? '#0c4a6e' : '#0f172a',
-              color: '#e2e8f0',
-              borderRadius: 12,
-              padding: 8,
-            },
-          }))}
-          edges={edges.map(e => {
-            const key = (u: string, v: string) => u < v ? `${u}|${v}` : `${v}|${u}`
-            const inMst = mst.has(key(e.source, e.target))
-            const inPath = path.includes(e.source) && path.includes(e.target)
-            const negEdge = neg && neg.length > 0 && (()=>{
-              for (let i = 0; i < neg.length; i++) {
-                const u = neg[i]
-                const v = neg[(i+1)%neg.length]
-                if ((u === e.source && v === e.target) || (u === e.target && v === e.source)) return true
-              }
-              return false
-            })()
-            return {
-              ...e,
+        <ReactFlowProvider>
+          <ReactFlow
+            nodes={nodes.map(n => ({
+              ...n,
               style: {
-                strokeWidth: inMst ? 3 : 2,
-                stroke: negEdge ? '#ef4444' : inPath ? '#22c55e' : inMst ? '#f59e0b' : '#94a3b8',
+                border: '2px solid',
+                borderColor: path.includes(n.id) ? '#22c55e' : visited.has(n.id) ? '#60a5fa' : '#334155',
+                background: path.includes(n.id) ? '#14532d' : visited.has(n.id) ? '#0c4a6e' : '#0f172a',
+                color: '#e2e8f0',
+                borderRadius: 12,
+                padding: 8,
               },
-              labelStyle: { fill: '#e2e8f0', fontWeight: 600 },
-            }
-          })}
-          fitView>
-          <Controls />
-          <Background />
-        </ReactFlow>
+            }))}
+            edges={edges.map(e => {
+              const key = (u: string, v: string) => u < v ? `${u}|${v}` : `${v}|${u}`
+              const inMst = mst.has(key(e.source, e.target))
+              const inPath = path.includes(e.source) && path.includes(e.target)
+              const negEdge = neg && neg.length > 0 && (()=>{
+                for (let i = 0; i < neg.length; i++) {
+                  const u = neg[i]
+                  const v = neg[(i+1)%neg.length]
+                  if ((u === e.source && v === e.target) || (u === e.target && v === e.source)) return true
+                }
+                return false
+              })()
+              return {
+                ...e,
+                style: {
+                  strokeWidth: inMst ? 3 : 2,
+                  stroke: negEdge ? '#ef4444' : inPath ? '#22c55e' : inMst ? '#f59e0b' : '#94a3b8',
+                },
+                labelStyle: { fill: '#e2e8f0', fontWeight: 600 },
+              }
+            })}
+            fitView>
+            <Controls />
+            <Background />
+          </ReactFlow>
+        </ReactFlowProvider>
       </div>
     </div>
   )

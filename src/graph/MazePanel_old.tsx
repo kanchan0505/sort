@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo } from 'react'
 import { useGraphStore } from '@/graph/store/useGraphStore'
 import { IconTarget, IconFlag, IconRoute } from '@tabler/icons-react'
 
@@ -12,13 +12,6 @@ export default function MazePanel() {
   const visited = useGraphStore(s => s.visitedSet())
   const path = useGraphStore(s => s.currentPath())
   const generate = useGraphStore(s => s.generate)
-  const [selectingStart, setSelectingStart] = useState(false)
-  const [selectingGoal, setSelectingGoal] = useState(false)
-
-  // Auto-generate whenever start or goal changes
-  useEffect(() => {
-    generate()
-  }, [start, goal, generate])
 
   const pathSet = useMemo(() => {
     const set = new Set<string>()
@@ -29,26 +22,12 @@ export default function MazePanel() {
   }, [path])
 
   const handleCellClick = (r: number, c: number) => {
-    if (selectingStart) {
-      setStart([r, c])
-      setSelectingStart(false)
-      // useEffect will auto-generate
-      return
-    }
-    if (selectingGoal) {
-      setGoal([r, c])
-      setSelectingGoal(false)
-      // useEffect will auto-generate
-      return
-    }
-    
     if (r === start[0] && c === start[1]) return
     if (r === goal[0] && c === goal[1]) return
     
     const newGrid = grid.map(row => [...row])
     newGrid[r][c] = newGrid[r][c] === 1 ? 0 : 1
     setGrid(newGrid)
-    generate()
   }
 
   const generateRandomMaze = () => {
@@ -57,13 +36,11 @@ export default function MazePanel() {
     newGrid[start[0]][start[1]] = 0
     newGrid[goal[0]][goal[1]] = 0
     setGrid(newGrid)
-    generate()
   }
 
   const clearMaze = () => {
     const newGrid = Array.from({ length: 15 }, () => Array.from({ length: 24 }, () => 0))
     setGrid(newGrid)
-    generate()
   }
 
   return (
@@ -73,40 +50,31 @@ export default function MazePanel() {
           <div className="w-4 h-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"></div>
           <h2 className="text-xl font-bold text-white">Maze Pathfinding</h2>
         </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setSelectingStart(true)}
-            className={`px-3 py-1.5 text-sm rounded-lg transition-all font-medium ${selectingStart ? 'bg-green-600 text-white ring-2 ring-green-400' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}`}
-          >
-            {selectingStart ? '✓ Selecting Start' : 'Set Start'}
-          </button>
-          <button 
-            onClick={() => setSelectingGoal(true)}
-            className={`px-3 py-1.5 text-sm rounded-lg transition-all font-medium ${selectingGoal ? 'bg-red-600 text-white ring-2 ring-red-400' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}`}
-          >
-            {selectingGoal ? '✓ Selecting Goal' : 'Set Goal'}
-          </button>
+        <div className="flex items-center gap-4">
           <button 
             onClick={generateRandomMaze}
-            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-all font-medium"
-            title="Generate a random maze with walls"
+            className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-all"
           >
             Random Maze
           </button>
           <button 
             onClick={clearMaze}
-            className="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-all font-medium"
+            className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-all"
           >
             Clear
           </button>
-          <div className="flex items-center gap-3 text-xs ml-4 pl-4 border-l border-slate-600">
-            <div className="flex items-center gap-1.5 text-green-400">
-              <IconTarget size={14} />
-              <span>({start[0]}, {start[1]})</span>
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2 text-green-400">
+              <IconTarget size={16} />
+              Start
             </div>
-            <div className="flex items-center gap-1.5 text-red-400">
-              <IconFlag size={14} />
-              <span>({goal[0]}, {goal[1]})</span>
+            <div className="flex items-center gap-2 text-red-400">
+              <IconFlag size={16} />
+              Goal
+            </div>
+            <div className="flex items-center gap-2 text-blue-400">
+              <IconRoute size={16} />
+              Path
             </div>
           </div>
         </div>
@@ -122,7 +90,6 @@ export default function MazePanel() {
               const isVisited = visited.has(key)
               const isInPath = pathSet.has(key)
               const isWall = cell === 1
-              const isSelecting = (selectingStart && !isGoal) || (selectingGoal && !isStart)
               
               return (
                 <div
@@ -135,7 +102,6 @@ export default function MazePanel() {
                       isGoal ? 'bg-red-500 shadow-lg shadow-red-500/50' :
                       isInPath ? 'bg-blue-500 shadow-md shadow-blue-500/50' :
                       isVisited ? 'bg-purple-400/70' :
-                      isSelecting ? 'bg-slate-600 hover:bg-slate-500 ring-1 ring-yellow-400' :
                       'bg-slate-700/30 hover:bg-slate-600/50'}
                   `}
                 >
@@ -149,15 +115,6 @@ export default function MazePanel() {
             })
           )}
         </div>
-      </div>
-      
-      <div className="mt-3 text-xs text-slate-400 space-y-1">
-        <p><strong>How to use:</strong></p>
-        <p>• Click <strong>Set Start</strong> then a cell to set starting point</p>
-        <p>• Click <strong>Set Goal</strong> then a cell to set endpoint</p>
-        <p>• Click cells to toggle walls (walls block pathfinding)</p>
-        <p>• <strong>Random Maze:</strong> Generates obstacles, then runs pathfinding algorithm</p>
-        <p>• <strong>Clear:</strong> Remove all walls and reset maze</p>
       </div>
     </div>
   )

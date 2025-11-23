@@ -26,10 +26,9 @@ export default function ControlPanel() {
 
   const progress = useMemo(() => (events.length ? ((cursor + 1) / events.length) * 100 : 0), [events, cursor])
 
-  // Update array in store when size changes
   const handleSizeChange = (newSize: number) => {
     setSize(newSize);
-    // Randomize new array with new size
+    // Randomize new array with new size - this will auto-trigger generate
     randomize(newSize);
   };
 
@@ -51,7 +50,9 @@ export default function ControlPanel() {
         return
       }
       
+      setSize(numbers.length)
       setInput(numbers)
+      // setInput will auto-trigger generate via the store
       setInputError('')
       setShowManualInput(false)
       setManualInput('')
@@ -140,13 +141,6 @@ export default function ControlPanel() {
               </div>
             </div>
           )}
-          <button 
-            className="btn-primary w-full sm:w-auto hover:scale-105 active:scale-95 flex items-center gap-2" 
-            onClick={generate}
-          >
-            <IconBolt size={16} />
-            Generate
-          </button>
         </div>
         
         {/* Error Message */}
@@ -159,22 +153,25 @@ export default function ControlPanel() {
         {/* Playback Controls */}
   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-800 border border-slate-600 rounded-lg p-3 w-full sm:w-auto">
           <button 
-            className={`px-4 py-2 w-full sm:w-auto rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${playing ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white hover:scale-105 active:scale-95`}
+            className={`px-4 py-2 w-full sm:w-auto rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${playing ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed`}
             onClick={playing ? pause : play}
+            disabled={events.length === 0}
           >
             {playing ? <IconPlayerPause size={16} /> : <IconPlayerPlay size={16} />}
             {playing ? 'Pause' : 'Play'}
           </button>
           <button 
-            className="px-4 py-2 w-full sm:w-auto rounded-lg font-medium bg-gray-600 hover:bg-gray-700 text-white transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2" 
+            className="px-4 py-2 w-full sm:w-auto rounded-lg font-medium bg-gray-600 hover:bg-gray-700 text-white transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
             onClick={() => step(-1)}
+            disabled={events.length === 0}
           >
             <IconPlayerTrackPrev size={16} />
             Back
           </button>
           <button 
-            className="px-4 py-2 w-full sm:w-auto rounded-lg font-medium bg-gray-600 hover:bg-gray-700 text-white transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2" 
+            className="px-4 py-2 w-full sm:w-auto rounded-lg font-medium bg-gray-600 hover:bg-gray-700 text-white transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
             onClick={() => step(1)}
+            disabled={events.length === 0}
           >
             <IconPlayerTrackNext size={16} />
             Step

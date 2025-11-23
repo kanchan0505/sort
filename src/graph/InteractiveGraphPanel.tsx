@@ -6,120 +6,39 @@ import ReactFlow, {
   Edge, 
   Connection, 
   Position,
-  NodeTypes,
+  useNodesState,
+  useEdgesState,
+  addEdge,
   ReactFlowProvider
 } from 'reactflow'
+import 'reactflow/dist/style.css'
 import { useGraphStore } from '@/graph/store/useGraphStore'
-import { IconTarget, IconFlag, IconRoute } from '@tabler/icons-react'
+import { IconTarget, IconFlag, IconRoute, IconPlus } from '@tabler/icons-react'
 
-// Custom node component for better visuals
-function GraphNode({ data, selected }: { data: any; selected?: boolean }) {
-  const visited = useGraphStore(s => s.visitedSet())
-  const path = useGraphStore(s => s.currentPath())
+// Note: Using default node styling instead of custom component for better reactflow compatibility
+
+function GraphPanel({ nodes: initialNodes, edges: initialEdges }: { nodes: Node[]; edges: Edge[] }) {
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
   const gStart = useGraphStore(s => s.gStart)
   const gGoal = useGraphStore(s => s.gGoal)
-  
-  const isStart = data.id === gStart
-  const isGoal = data.id === gGoal
-  const isVisited = visited.has(data.id)
-  const isInPath = path.includes(data.id)
-  
-  return (
-    <div className={`
-      px-6 py-4 rounded-xl border-2 transition-all duration-300 cursor-pointer
-      min-w-[80px] min-h-[60px] flex items-center justify-center
-      ${isStart ? 'bg-green-600 border-green-400 shadow-lg shadow-green-500/30' : 
-        isGoal ? 'bg-red-600 border-red-400 shadow-lg shadow-red-500/30' :
-        isInPath ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500/30' :
-        isVisited ? 'bg-purple-600 border-purple-400 shadow-lg shadow-purple-500/30' :
-        'bg-slate-700 border-slate-500 hover:border-slate-400'}
-      ${selected ? 'ring-2 ring-white ring-opacity-60' : ''}
-    `}>
-      <div className="text-center">
-        <div className="text-white font-bold text-lg">{data.label}</div>
-        {isStart && <IconTarget className="w-4 h-4 text-white mx-auto mt-1" />}
-        {isGoal && <IconFlag className="w-4 h-4 text-white mx-auto mt-1" />}
-      </div>
-    </div>
-  )
-}
-
-const nodeTypes: NodeTypes = {
-  graphNode: GraphNode
-}
-
-export default function InteractiveGraphPanel() {
-  const [nodes, setNodes] = useState<Node[]>([])
-  const [edges, setEdges] = useState<Edge[]>([])
-  
+  const setGraphStart = useGraphStore(s => s.setGraphStart)
+  const setGraphGoal = useGraphStore(s => s.setGraphGoal)
   const graph = useGraphStore(s => s.graph)
   const setGraph = useGraphStore(s => s.setGraph)
-  const visited = useGraphStore(s => s.visitedSet())
-  const path = useGraphStore(s => s.currentPath())
-  const mst = useGraphStore(s => s.mstEdgeSet())
-  const gStart = useGraphStore(s => s.gStart)
-  const setGraphStart = useGraphStore(s => s.setGraphStart)
-  const gGoal = useGraphStore(s => s.gGoal)
-  const setGraphGoal = useGraphStore(s => s.setGraphGoal)
-
-  // Update nodes and edges when graph state changes
-  React.useEffect(() => {
-    const ids = Object.keys(graph)
-    const positions = [
-      { x: 150, y: 150 }, { x: 400, y: 100 }, { x: 650, y: 150 }, { x: 400, y: 250 },
-      { x: 250, y: 300 }, { x: 550, y: 300 }, { x: 150, y: 450 }, { x: 650, y: 450 }
-    ]
-    
-    const newNodes: Node[] = ids.map((id, idx) => ({
-      id,
-      type: 'graphNode',
-      position: positions[idx] || { x: 100 + (idx % 4) * 200, y: 100 + Math.floor(idx / 4) * 150 },
-      data: { id, label: id.toUpperCase() },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-    }))
-    
-    const newEdges: Edge[] = []
-    for (const u of Object.keys(graph)) {
-      for (const { to, w } of graph[u]) {
-        const edgeId = `${u}-${to}`
-        const key = (a: string, b: string) => a < b ? `${a}|${b}` : `${b}|${a}`
-        const inMst = mst.has(key(u, to))
-        const inPath = path.includes(u) && path.includes(to)
-        
-        newEdges.push({ 
-          id: edgeId, 
-          source: u, 
-          target: to, 
-          label: String(w),
-          style: {
-            strokeWidth: inMst ? 4 : inPath ? 3 : 2,
-            stroke: inMst ? '#f59e0b' : inPath ? '#3b82f6' : '#64748b',
-          },
-          labelStyle: { 
-            fill: '#e2e8f0', 
-            fontWeight: 600, 
-            fontSize: 14,
-            background: '#1e293b',
-            padding: '4px 8px',
-            borderRadius: '4px'
-          },
-        })
-      }
-    }
-    setNodes(newNodes)
-    setEdges(newEdges)
-  }, [graph, mst, path])
 
   const onConnect = useCallback((connection: Connection) => {
     if (!connection.source || !connection.target) return
-    const u = connection.source, v = connection.target
+    setEdges((eds) => addEdge({ ...connection, animated: true }, eds))
+    
+    const u = connection.source
+    const v = connection.target
     setGraph({
       ...graph,
-      [u]: [...(graph[u] || []), { to: v, w: 1 }],
+      [u]: [...(graph[u] || []).filter(e => e.to !== v), { to: v, w: 1 }],
       [v]: graph[v] || [],
     })
-  }, [graph, setGraph])
+  }, [setEdges, graph, setGraph])
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     if (event.shiftKey) {
@@ -129,6 +48,95 @@ export default function InteractiveGraphPanel() {
     }
   }, [gStart, gGoal, setGraphStart, setGraphGoal])
 
+  React.useEffect(() => {
+    setNodes(initialNodes)
+    setEdges(initialEdges)
+  }, [initialNodes, initialEdges, setNodes, setEdges])
+
+  return (
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      onNodeClick={onNodeClick}
+      fitView
+      snapToGrid={true}
+      snapGrid={[20, 20]}
+    >
+      <Background color="#475569" gap={12} />
+      <Controls />
+    </ReactFlow>
+  )
+}
+
+export default function InteractiveGraphPanel() {
+  const graph = useGraphStore(s => s.graph)
+  const visited = useGraphStore(s => s.visitedSet())
+  const path = useGraphStore(s => s.currentPath())
+  const mst = useGraphStore(s => s.mstEdgeSet())
+
+  const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
+    const ids = Object.keys(graph).length > 0 ? Object.keys(graph) : ['a', 'b', 'c']
+    const positions = [
+      { x: 150, y: 100 }, { x: 400, y: 50 }, { x: 650, y: 100 }, 
+      { x: 400, y: 250 }, { x: 250, y: 350 }, { x: 550, y: 350 }, 
+      { x: 100, y: 450 }, { x: 700, y: 450 }
+    ]
+    
+    const newNodes: Node[] = ids.map((id, idx) => ({
+      id,
+      type: 'default',
+      position: positions[idx % positions.length],
+      data: { label: id.toUpperCase() },
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
+      style: {
+        background: path.includes(id) ? '#2563eb' : visited.has(id) ? '#9333ea' : '#334155',
+        border: path.includes(id) ? '2px solid #60a5fa' : visited.has(id) ? '2px solid #c084fc' : '2px solid #64748b',
+        color: '#e2e8f0',
+        borderRadius: '8px',
+        padding: '8px 16px',
+        fontSize: '14px',
+        fontWeight: 600,
+      }
+    }))
+    
+    const newEdges: Edge[] = []
+    const edgeSet = new Set<string>()
+    
+    for (const u of Object.keys(graph)) {
+      for (const { to: v, w } of graph[u]) {
+        const key = u < v ? `${u}-${v}` : `${v}-${u}`
+        if (edgeSet.has(key)) continue
+        edgeSet.add(key)
+        
+        const inMst = mst.has(key.includes('|') ? key : `${u < v ? u : v}|${u < v ? v : u}`)
+        const inPath = path.includes(u) && path.includes(v)
+        
+        newEdges.push({ 
+          id: key, 
+          source: u, 
+          target: v, 
+          label: String(w),
+          animated: inPath,
+          style: {
+            strokeWidth: inMst ? 3 : inPath ? 2.5 : 2,
+            stroke: inMst ? '#f59e0b' : inPath ? '#3b82f6' : '#94a3b8',
+          },
+          labelStyle: { 
+            fill: '#e2e8f0', 
+            fontWeight: 600, 
+            fontSize: 12,
+          },
+        })
+      }
+    }
+    
+    return { nodes: newNodes, edges: newEdges }
+  }, [graph, visited, path, mst])
+
   return (
     <div className="panel p-6">
       <div className="flex items-center justify-between mb-4">
@@ -136,28 +144,15 @@ export default function InteractiveGraphPanel() {
           <div className="w-4 h-4 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full"></div>
           <h2 className="text-xl font-bold text-white">Interactive Graph</h2>
         </div>
-        <div className="text-sm text-slate-400 space-y-1">
-          <div>Ctrl+Click: Set Start • Shift+Click: Set Goal</div>
-          <div>Drag nodes • Connect edges • Edit weights</div>
+        <div className="text-xs text-slate-400 space-y-1">
+          <div><strong>Ctrl+Click:</strong> Set Start • <strong>Shift+Click:</strong> Set Goal</div>
+          <div><strong>Drag:</strong> Move nodes • <strong>Connect:</strong> Drag from output handle</div>
         </div>
       </div>
       
       <div className="h-[500px] rounded-xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600">
         <ReactFlowProvider>
-          <ReactFlow 
-            nodes={nodes}
-            edges={edges}
-            onConnect={onConnect}
-            onNodeClick={onNodeClick}
-            nodeTypes={nodeTypes}
-            fitView
-            snapToGrid
-            snapGrid={[20, 20]}
-            defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-          >
-            <Controls className="bg-slate-800 border-slate-600" />
-            <Background color="#475569" />
-          </ReactFlow>
+          <GraphPanel nodes={initialNodes} edges={initialEdges} />
         </ReactFlowProvider>
       </div>
     </div>

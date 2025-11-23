@@ -32,13 +32,16 @@ export default function App() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === ' ') {
         e.preventDefault()
-        play()
-      } else if (e.key === 'ArrowRight') step(1)
-      else if (e.key === 'ArrowLeft') step(-1)
+        if (eventsLen > 0) play()
+      } else if (e.key === 'ArrowRight' && eventsLen > 0) {
+        step(1)
+      } else if (e.key === 'ArrowLeft' && eventsLen > 0) {
+        step(-1)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [eventsLen])
 
   return (
     <div className="h-screen flex flex-col bg-slate-900 overflow-hidden">
@@ -48,20 +51,23 @@ export default function App() {
         <div className="space-y-4">
           <ControlPanel />
           
-          <div className="panel p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-300">Timeline Progress</span>
-              <span className="text-xs text-slate-400">{Math.max(cursor, 0)} / {eventsLen}</span>
+          {/* Timeline Progress - only show when timeline exists */}
+          {eventsLen > 0 && (
+            <div className="panel p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-slate-300">Timeline Progress</span>
+                <span className="text-xs text-slate-400">{Math.max(cursor, 0)} / {eventsLen}</span>
+              </div>
+              <input
+                type="range"
+                min={-1}
+                max={Math.max(eventsLen - 1, -1)}
+                value={cursor}
+                onChange={(e) => seek(Number(e.target.value))}
+                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
+              />
             </div>
-            <input
-              type="range"
-              min={-1}
-              max={Math.max(eventsLen - 1, -1)}
-              value={cursor}
-              onChange={(e) => seek(Number(e.target.value))}
-              className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
-            />
-          </div>
+          )}
           
           <div className="panel p-4">
             <div className="flex items-center gap-2 mb-3">

@@ -17,6 +17,13 @@ export default function GraphControls() {
   const setGraphStart = useGraphStore(s => s.setGraphStart)
   const gGoal = useGraphStore(s => s.gGoal)
   const setGraphGoal = useGraphStore(s => s.setGraphGoal)
+  const events = useGraphStore(s => s.events)
+
+  const handleAlgoChange = (newAlgo: string) => {
+    setAlgo(newAlgo)
+    // Auto-generate after algorithm change
+    setTimeout(() => generate(), 0)
+  }
 
   return (
     <div className="panel p-4">
@@ -31,7 +38,7 @@ export default function GraphControls() {
           <select
             className="bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-sm"
             value={algo}
-            onChange={(e)=> setAlgo(e.target.value as any)}
+            onChange={(e)=> handleAlgoChange(e.target.value as any)}
           >
             {graphAlgorithmOptions.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
           </select>
@@ -40,13 +47,25 @@ export default function GraphControls() {
           </button>
         </div>
         <div className="flex items-center gap-2 bg-slate-800 border border-slate-600 rounded-lg p-3">
-          <button className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${playing ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white`} onClick={playing ? pause : play}>
+          <button 
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${playing ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white disabled:opacity-50 disabled:cursor-not-allowed`} 
+            onClick={playing ? pause : play}
+            disabled={events.length === 0}
+          >
             {playing ? <IconPlayerPause size={16}/> : <IconPlayerPlay size={16}/>} {playing ? 'Pause' : 'Play'}
           </button>
-          <button className="px-4 py-2 rounded-lg font-medium bg-gray-600 hover:bg-gray-700 text-white flex items-center gap-2" onClick={()=>step(-1)}>
+          <button 
+            className="px-4 py-2 rounded-lg font-medium bg-gray-600 hover:bg-gray-700 text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" 
+            onClick={()=>step(-1)}
+            disabled={events.length === 0}
+          >
             <IconPlayerTrackPrev size={16}/> Back
           </button>
-          <button className="px-4 py-2 rounded-lg font-medium bg-gray-600 hover:bg-gray-700 text-white flex items-center gap-2" onClick={()=>step(1)}>
+          <button 
+            className="px-4 py-2 rounded-lg font-medium bg-gray-600 hover:bg-gray-700 text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" 
+            onClick={()=>step(1)}
+            disabled={events.length === 0}
+          >
             <IconPlayerTrackNext size={16}/> Step
           </button>
         </div>

@@ -15,6 +15,12 @@ export default function GraphAppBar() {
   const playing = useGraphStore(s => s.playing)
   const speed = useGraphStore(s => s.speed)
   const setSpeed = useGraphStore(s => s.setSpeed)
+  const events = useGraphStore(s => s.events)
+
+  const handleAlgoChange = (newAlgo: string) => {
+    setAlgo(newAlgo)
+    setTimeout(() => generate(), 0)
+  }
 
   return (
     <header className="bg-slate-800/90 backdrop-blur-sm border-b border-slate-700 px-6 py-4">
@@ -40,7 +46,7 @@ export default function GraphAppBar() {
             <select
               className="bg-transparent border-none text-sm font-medium text-slate-200 focus:outline-none"
               value={algo}
-              onChange={(e) => setAlgo(e.target.value as any)}
+              onChange={(e) => handleAlgoChange(e.target.value as any)}
             >
               {graphAlgorithmOptions.map(o => <option key={o.id} value={o.id} className="bg-slate-800">{o.name}</option>)}
             </select>
@@ -55,15 +61,24 @@ export default function GraphAppBar() {
           {/* Playback Controls */}
           <div className="flex items-center gap-2 bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2">
             <button 
-              className="px-3 py-1 rounded-md font-medium transition-all flex items-center gap-2 text-sm bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
+              className="px-3 py-1 rounded-md font-medium transition-all flex items-center gap-2 text-sm bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={playing ? pause : play}
+              disabled={events.length === 0}
             >
               {playing ? <IconPlayerPause size={14}/> : <IconPlayerPlay size={14}/>}
             </button>
-            <button className="p-1 text-slate-400 hover:text-white transition-colors" onClick={() => step(-1)}>
+            <button 
+              className="p-1 text-slate-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+              onClick={() => step(-1)}
+              disabled={events.length === 0}
+            >
               <IconPlayerTrackPrev size={16}/>
             </button>
-            <button className="p-1 text-slate-400 hover:text-white transition-colors" onClick={() => step(1)}>
+            <button 
+              className="p-1 text-slate-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+              onClick={() => step(1)}
+              disabled={events.length === 0}
+            >
               <IconPlayerTrackNext size={16}/>
             </button>
           </div>
